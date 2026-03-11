@@ -188,7 +188,6 @@ func (m Model) View() string {
 		rows = append(rows, theme.muted.Render("No devices yet"))
 	} else {
 		for i, d := range m.devices {
-			cursor := "  "
 			state := "available"
 			if d.Connected {
 				state = "connected"
@@ -196,7 +195,7 @@ func (m Model) View() string {
 				state = "paired"
 			}
 
-			row := fmt.Sprintf("%s%s  %s", cursor, theme.deviceName.Render(d.DisplayName()), theme.deviceMeta.Render(d.Address))
+			row := fmt.Sprintf("%-25s  %s", theme.deviceName.Render(d.DisplayName()), theme.deviceMeta.Render(d.Address))
 			row += "  " + renderState(theme, state)
 			if i == m.selected {
 				rows = append(rows, theme.selectedRow.Render(row))
