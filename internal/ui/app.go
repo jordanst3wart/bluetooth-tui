@@ -180,7 +180,8 @@ func (m Model) View() string {
 	}
 
 	header := theme.header.Render("Bluetooth Control")
-	subtitle := theme.muted.Render("↑/↓ select | ⏎ connect | q quit | r rescan")
+	// subtitle := theme.muted.Render("↑/↓ select | ⏎ connect | q quit | r rescan")
+	subtitle := fmt.Sprintf("%s select | %s connect | %s quit | %s rescan", theme.highlight.Render("↑/↓"), theme.highlight.Render("⏎"), theme.highlight.Render("q"), theme.highlight.Render("r"))
 
 	var rows []string
 	if len(m.devices) == 0 {
@@ -309,7 +310,7 @@ func newTheme() theme {
 			Foreground(lipgloss.Color("254")),
 		header:    lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")),
 		muted:     lipgloss.NewStyle().Foreground(lipgloss.Color("248")),
-		highlight: lipgloss.NewStyle(),
+		highlight: lipgloss.NewStyle().Foreground(lipgloss.Color("230")),
 		selectedRow: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("230")).
 			Background(lipgloss.Color("60")),
