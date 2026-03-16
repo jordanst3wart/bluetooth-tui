@@ -47,17 +47,13 @@ type Model struct {
 	height        int
 	scanSeconds   int
 	scanRemaining int
-	knownCount    int
-	spinnerIndex  int
 	timeoutSecond int
 }
-
-var spinnerFrames = []string{"|", "/", "-", "\\"}
 
 func NewModel(manager *bluetooth.BluetoothctlManager) Model {
 	return Model{
 		manager:       manager,
-		status:        "Starting Bluetooth...",
+		status:        "Starting Bluetooth...", // probably not needed...
 		loading:       true,
 		scanSeconds:   defaultScanSeconds,
 		timeoutSecond: defaultOpTimeout,
@@ -98,7 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if len(m.devices) == 0 {
 			m.status = "No devices found."
 		} else {
-			m.status = fmt.Sprintf("Found %d devices", len(m.devices))
+			m.status = fmt.Sprintf("%d devices", len(m.devices))
 		}
 		return m, nil
 
@@ -114,7 +110,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.scanRemaining > 0 {
 			m.scanRemaining--
 		}
-		m.spinnerIndex = (m.spinnerIndex + 1) % len(spinnerFrames)
 		if m.scanRemaining == 0 {
 			return m, nil
 		}
@@ -187,7 +182,7 @@ func (m Model) View() string {
 				state = "paired"
 			}
 
-			row := fmt.Sprintf("%-25s  %s", theme.deviceName.Render(d.DisplayName()), theme.deviceMeta.Render(d.Address))
+			row := fmt.Sprintf("%-25s", theme.deviceName.Render(d.DisplayName()))
 			row += "  " + renderState(theme, state)
 			if i == m.selected {
 				rows = append(rows, theme.selectedRow.Render(row))
@@ -200,8 +195,8 @@ func (m Model) View() string {
 	body := lipgloss.JoinVertical(lipgloss.Left, rows...)
 	status := theme.status.Render(m.status)
 	if m.scanning {
-		frame := spinnerFrames[m.spinnerIndex]
-		status = theme.statusBusy.Render(fmt.Sprintf("%s Scanning... %ds left  devices:%d", frame, m.scanRemaining, m.knownCount))
+		// can remove known count
+		status = theme.statusBusy.Render(fmt.Sprintf("%d devices, Scanning... %ds left", len(m.devices), m.scanRemaining))
 	} else if m.loading {
 		status = theme.statusBusy.Render("Working... " + m.status)
 	}
@@ -230,8 +225,6 @@ func (m Model) startScan() (Model, tea.Cmd) {
 	m.loading = true
 	m.scanning = true
 	m.scanRemaining = m.scanSeconds
-	m.knownCount = 0
-	m.spinnerIndex = 0
 	m.status = "Scanning for devices..."
 	return m, tea.Batch(m.scanCmd(), m.scanTickCmd())
 }
