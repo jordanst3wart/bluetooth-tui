@@ -196,6 +196,7 @@ func parseDeviceInfo(output, address string) (Device, bool) {
 			}
 			continue
 		}
+		// TODO fix this
 		if strings.HasPrefix(line, "Name:") {
 			device.Name = strings.TrimSpace(strings.TrimPrefix(line, "Name:"))
 			continue

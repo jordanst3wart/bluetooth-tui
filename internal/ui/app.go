@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultScanSeconds = 10
+	defaultScanSeconds = 5
 	defaultOpTimeout   = 10
 )
 
@@ -27,11 +27,6 @@ type scanResultMsg struct {
 
 type scanTickMsg time.Time
 
-type knownCountMsg struct {
-	count int
-	err   error
-}
-
 type connectResultMsg struct {
 	address string
 	err     error
@@ -44,7 +39,6 @@ type Model struct {
 	status        string
 	loading       bool
 	scanning      bool
-	quitting      bool
 	width         int
 	height        int
 	scanSeconds   int
@@ -104,12 +98,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case knownCountMsg:
-		if msg.err == nil {
-			m.knownCount = msg.count
-		}
-		return m, nil
-
 	case scanTickMsg:
 		if !m.scanning {
 			return m, nil
@@ -121,7 +109,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.scanRemaining == 0 {
 			return m, nil
 		}
-		return m, tea.Batch(m.scanTickCmd(), m.knownCountCmd())
+		return m, tea.Batch(m.scanTickCmd())
 
 	case connectResultMsg:
 		m.loading = false
@@ -142,7 +130,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
-			m.quitting = true
 			return m, tea.Quit
 		case "up", "k":
 			if m.selected > 0 {
@@ -174,13 +161,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	theme := newTheme()
-
-	if m.quitting {
-		return theme.base.Render("Goodbye")
-	}
-
+	// TODO move heading to somewhere better
 	header := theme.header.Render("Bluetooth Control")
-	// subtitle := theme.muted.Render("↑/↓ select | ⏎ connect | q quit | r rescan")
 	subtitle := fmt.Sprintf("%s select | %s connect | %s quit | %s rescan", theme.highlight.Render("↑/↓"), theme.highlight.Render("⏎"), theme.highlight.Render("q"), theme.highlight.Render("r"))
 
 	var rows []string
@@ -214,7 +196,7 @@ func (m Model) View() string {
 		status = theme.statusBusy.Render("Working... " + m.status)
 	}
 
-	content := lipgloss.JoinVertical(lipgloss.Left, header, subtitle, "", body, "", status)
+	content := lipgloss.JoinVertical(lipgloss.Left, header, status, "", body, "", subtitle)
 	return theme.base.Render(content)
 }
 
@@ -241,7 +223,7 @@ func (m Model) startScan() (Model, tea.Cmd) {
 	m.knownCount = 0
 	m.spinnerIndex = 0
 	m.status = "Scanning for devices..."
-	return m, tea.Batch(m.scanCmd(), m.scanTickCmd(), m.knownCountCmd())
+	return m, tea.Batch(m.scanCmd(), m.scanTickCmd())
 }
 
 func (m Model) scanCmd() tea.Cmd {
@@ -257,12 +239,12 @@ func (m Model) scanTickCmd() tea.Cmd {
 	})
 }
 
-func (m Model) knownCountCmd() tea.Cmd {
+/*func (m Model) knownCountCmd() tea.Cmd {
 	return func() tea.Msg {
 		count, err := m.manager.KnownDevicesCount()
 		return knownCountMsg{count: count, err: err}
 	}
-}
+}*/
 
 func (m Model) connectCmd(address string) tea.Cmd {
 	return func() tea.Msg {
