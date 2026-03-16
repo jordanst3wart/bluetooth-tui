@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"bluetooth-tui2/internal/bluetooth"
-	"bluetooth-tui2/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/jordanst3wart/bluetooth-tui/internal/bluetooth"
+	"github.com/jordanst3wart/bluetooth-tui/internal/ui"
 )
 
 func main() {

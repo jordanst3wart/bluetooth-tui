@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"bluetooth-tui2/internal/bluetooth"
+	"github.com/jordanst3wart/bluetooth-tui/internal/bluetooth"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"

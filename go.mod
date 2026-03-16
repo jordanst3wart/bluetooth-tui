@@ -1,4 +1,4 @@
-module bluetooth-tui2
+module github.com/jordanst3wart/bluetooth-tui
 
 go 1.26.1
 
