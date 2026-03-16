@@ -84,7 +84,7 @@ func (m *BluetoothctlManager) Scan(seconds int) ([]Device, error) {
 		devices[i].Connected = info.Connected
 	}
 	sort.Slice(devices, func(i, j int) bool {
-		return strings.ToLower(devices[i].DisplayName()) < strings.ToLower(devices[j].DisplayName())
+		return strings.ToLower(devices[i].DisplayName()) > strings.ToLower(devices[j].DisplayName())
 	})
 	return devices, nil
 }
@@ -180,6 +180,9 @@ func parseDevices(output string) []Device {
 		}
 		devices = append(devices, Device{Address: addr, Name: name})
 	}
+	sort.Slice(devices, func(i, j int) bool {
+		return strings.ToLower(devices[i].DisplayName()) > strings.ToLower(devices[j].DisplayName())
+	})
 	return devices
 }
 

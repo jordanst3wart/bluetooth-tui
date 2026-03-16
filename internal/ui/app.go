@@ -196,9 +196,9 @@ func (m Model) View() string {
 	status := theme.status.Render(m.status)
 	if m.scanning {
 		// can remove known count
-		status = theme.statusBusy.Render(fmt.Sprintf("%d devices, Scanning... %ds left", len(m.devices), m.scanRemaining))
+		status = theme.status.Render(fmt.Sprintf("%d devices, Scanning... %ds left", len(m.devices), m.scanRemaining))
 	} else if m.loading {
-		status = theme.statusBusy.Render("Working... " + m.status)
+		status = theme.status.Render("Working... " + m.status)
 	}
 
 	content := lipgloss.JoinVertical(lipgloss.Left, header, status, "", body, "", subtitle)
@@ -247,13 +247,6 @@ func (m Model) scanTickCmd() tea.Cmd {
 	})
 }
 
-/*func (m Model) knownCountCmd() tea.Cmd {
-	return func() tea.Msg {
-		count, err := m.manager.KnownDevicesCount()
-		return knownCountMsg{count: count, err: err}
-	}
-}*/
-
 func (m Model) connectCmd(address string) tea.Cmd {
 	return func() tea.Msg {
 		info, err := m.manager.DeviceInfo(address)
@@ -284,7 +277,6 @@ type theme struct {
 	deviceName  lipgloss.Style
 	deviceMeta  lipgloss.Style
 	status      lipgloss.Style
-	statusBusy  lipgloss.Style
 	cursor      lipgloss.Style
 	tagOK       lipgloss.Style
 	tagWarn     lipgloss.Style
@@ -305,8 +297,7 @@ func newTheme() theme {
 			Background(lipgloss.Color("60")),
 		deviceName: lipgloss.NewStyle().Bold(true),
 		deviceMeta: lipgloss.NewStyle().Foreground(lipgloss.Color("250")),
-		status:     lipgloss.NewStyle().Foreground(lipgloss.Color("229")),
-		statusBusy: lipgloss.NewStyle().Foreground(lipgloss.Color("222")).Bold(true),
+		status:     lipgloss.NewStyle().Foreground(lipgloss.Color("222")).Bold(true),
 		cursor:     lipgloss.NewStyle().Foreground(lipgloss.Color("221")).Bold(true),
 		tagOK: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("120")),
