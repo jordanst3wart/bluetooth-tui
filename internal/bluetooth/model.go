@@ -21,13 +21,3 @@ func (d Device) DisplayName() string {
 	}
 	return name
 }
-
-type Manager interface {
-	PowerState() (bool, error)
-	SetPower(on bool) error
-	Scan(seconds int) ([]Device, error)
-	// KnownDevicesCount() (int, error) // remove...
-	Pair(address string, timeoutSeconds int) error
-	Connect(address string, timeoutSeconds int) error
-	DeviceInfo(address string) (Device, error)
-}

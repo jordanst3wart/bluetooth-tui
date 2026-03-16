@@ -89,12 +89,12 @@ func (m *BluetoothctlManager) Scan(seconds int) ([]Device, error) {
 	return devices, nil
 }
 
-func (m *BluetoothctlManager) KnownDevicesCount() (int, error) {
+func (m *BluetoothctlManager) KnownDevices() ([]Device, error) {
 	out, err := m.runCtl(0, "devices")
 	if err != nil {
-		return 0, err
+		return []Device{}, err
 	}
-	return len(parseDevices(out)), nil
+	return parseDevices(out), nil
 }
 
 func (m *BluetoothctlManager) Pair(address string, timeoutSeconds int) error {

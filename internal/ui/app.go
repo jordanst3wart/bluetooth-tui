@@ -25,7 +25,11 @@ type scanResultMsg struct {
 	err     error
 }
 
-type scanTickMsg time.Time
+type scanTickMsg struct {
+	count   time.Time
+	devices []bluetooth.Device
+	err     error
+}
 
 type connectResultMsg struct {
 	address string
@@ -33,7 +37,7 @@ type connectResultMsg struct {
 }
 
 type Model struct {
-	manager       bluetooth.Manager
+	manager       *bluetooth.BluetoothctlManager
 	devices       []bluetooth.Device
 	selected      int
 	status        string
@@ -50,7 +54,7 @@ type Model struct {
 
 var spinnerFrames = []string{"|", "/", "-", "\\"}
 
-func NewModel(manager bluetooth.Manager) Model {
+func NewModel(manager *bluetooth.BluetoothctlManager) Model {
 	return Model{
 		manager:       manager,
 		status:        "Starting Bluetooth...",
@@ -99,7 +103,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case scanTickMsg:
+		if msg.err != nil {
+			m.status = "Scan errored: " + msg.err.Error()
+			return m, nil
+		}
 		if !m.scanning {
+			// shouldn't happened
 			return m, nil
 		}
 		if m.scanRemaining > 0 {
@@ -109,6 +118,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.scanRemaining == 0 {
 			return m, nil
 		}
+		m.devices = msg.devices
 		return m, tea.Batch(m.scanTickCmd())
 
 	case connectResultMsg:
@@ -235,7 +245,12 @@ func (m Model) scanCmd() tea.Cmd {
 
 func (m Model) scanTickCmd() tea.Cmd {
 	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
-		return scanTickMsg(t)
+		devices, err := m.manager.KnownDevices()
+		return scanTickMsg{
+			count:   t,
+			devices: devices,
+			err:     err,
+		}
 	})
 }
 
