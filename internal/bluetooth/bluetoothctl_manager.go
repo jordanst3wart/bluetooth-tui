@@ -135,13 +135,13 @@ func (m *BluetoothctlManager) runCtl(timeout time.Duration, args ...string) (str
 }
 
 func parsePowerState(output string) (bool, error) {
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "Powered:") {
-			return parseOnOff(strings.TrimSpace(strings.TrimPrefix(line, "Powered:")))
+		if after, ok := strings.CutPrefix(line, "Powered:"); ok {
+			return parseOnOff(strings.TrimSpace(after))
 		}
-		if strings.HasPrefix(line, "PowerState:") {
-			return parseOnOff(strings.TrimSpace(strings.TrimPrefix(line, "PowerState:")))
+		if after, ok := strings.CutPrefix(line, "PowerState:"); ok {
+			return parseOnOff(strings.TrimSpace(after))
 		}
 	}
 	return false, fmt.Errorf("power state not found")
@@ -161,7 +161,7 @@ func parseOnOff(v string) (bool, error) {
 
 func parseDevices(output string) []Device {
 	var devices []Device
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "Device ") {
 			continue
@@ -189,7 +189,7 @@ func parseDevices(output string) []Device {
 func parseDeviceInfo(output, address string) (Device, bool) {
 	device := Device{Address: address}
 	found := false
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "Device ") {
 			fields := strings.Fields(line)
@@ -199,20 +199,19 @@ func parseDeviceInfo(output, address string) (Device, bool) {
 			}
 			continue
 		}
-		// TODO fix this
-		if strings.HasPrefix(line, "Name:") {
-			device.Name = strings.TrimSpace(strings.TrimPrefix(line, "Name:"))
+		if after, ok := strings.CutPrefix(line, "Name:"); ok {
+			device.Name = strings.TrimSpace(after)
 			continue
 		}
-		if strings.HasPrefix(line, "Paired:") {
-			paired, err := parseOnOff(strings.TrimSpace(strings.TrimPrefix(line, "Paired:")))
+		if after, ok := strings.CutPrefix(line, "Paired:"); ok {
+			paired, err := parseOnOff(strings.TrimSpace(after))
 			if err == nil {
 				device.Paired = paired
 			}
 			continue
 		}
-		if strings.HasPrefix(line, "Connected:") {
-			connected, err := parseOnOff(strings.TrimSpace(strings.TrimPrefix(line, "Connected:")))
+		if after, ok := strings.CutPrefix(line, "Connected:"); ok {
+			connected, err := parseOnOff(strings.TrimSpace(after))
 			if err == nil {
 				device.Connected = connected
 			}
